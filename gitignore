@@ -1,0 +1,8 @@
+*.class
+*.zip
+.idea/
+/.gradle/
+/build/
+/.idea/
+build/
+.gradle/wrapper/caches/
