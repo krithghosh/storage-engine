@@ -1,1 +1,1 @@
-./gradlew clean build & ./gradlew bootrun
+./gradlew bootrun

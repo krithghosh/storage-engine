@@ -59,6 +59,6 @@ public class StorageController {
     @Operation(summary = "Fetches item in range", description = "This method fetches value for given keys in ranges", responses = {@ApiResponse(responseCode = "200", description = "Fetches values for keys provided")})
     public ResponseEntity<Response> getItems(@RequestParam(defaultValue = "city") String start, @RequestParam(defaultValue = "state") String end) {
         Map<Object, Object> response = storageService.getRangeItems(start, end);
-        return new ResponseEntity<>(new Response("Success", response), HttpStatus.OK);
+        return new ResponseEntity<>(new Response(response.isEmpty() ? "No data found for given range" : "Success", response), HttpStatus.OK);
     }
 }

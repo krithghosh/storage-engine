@@ -3,7 +3,6 @@ package com.moniepoint.assignment.storage.services;
 import com.moniepoint.assignment.storage.entities.Operation;
 import com.moniepoint.assignment.storage.entities.OperationType;
 import com.moniepoint.assignment.storage.entities.StorageOperation;
-import com.moniepoint.assignment.storage.exception.KeyAlreadyPresentException;
 import com.moniepoint.assignment.storage.exception.KeyNotFoundException;
 import org.springframework.stereotype.Component;
 
@@ -58,7 +57,6 @@ public class StorageEngine<K extends Comparable<? super K>, V> implements Storag
     public void put(K key, V value) {
         lock.writeLock().lock();
         try {
-            if (read(key) != null) throw new KeyAlreadyPresentException();
             wal.log(new Operation(OperationType.PUT, key, value, null));
             cache.put(key, value);
             memTable.put(key, value);
@@ -113,15 +111,6 @@ public class StorageEngine<K extends Comparable<? super K>, V> implements Storag
     public void batchPut(Map<K, V> entries) {
         lock.writeLock().lock();
         try {
-            List<K> list = new ArrayList<>();
-            for (Map.Entry<K, V> entry : entries.entrySet()) {
-                if (read(entry.getKey()) != null) {
-                    list.add(entry.getKey());
-                }
-            }
-            for (K key : list) {
-                entries.remove(key);
-            }
             Operation op = new Operation(OperationType.BATCH_PUT, null, null, entries);
             wal.log(op);
             // Update memory structures
