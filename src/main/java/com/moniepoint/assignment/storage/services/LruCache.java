@@ -1,4 +1,4 @@
-package services;
+package com.moniepoint.assignment.storage.services;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

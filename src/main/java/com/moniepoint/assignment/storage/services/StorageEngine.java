@@ -1,8 +1,11 @@
-package services;
+package com.moniepoint.assignment.storage.services;
 
-import entities.Operation;
-import entities.OperationType;
-import entities.StorageOperation;
+import com.moniepoint.assignment.storage.entities.Operation;
+import com.moniepoint.assignment.storage.entities.OperationType;
+import com.moniepoint.assignment.storage.entities.StorageOperation;
+import com.moniepoint.assignment.storage.exception.KeyAlreadyPresentException;
+import com.moniepoint.assignment.storage.exception.KeyNotFoundException;
+import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+@Component
 public class StorageEngine<K extends Comparable<? super K>, V> implements StorageOperation<K, V> {
     private final ConcurrentHashMap<K, V> memTable;
     private final WriteAheadLog wal;
@@ -54,7 +58,7 @@ public class StorageEngine<K extends Comparable<? super K>, V> implements Storag
     public void put(K key, V value) {
         lock.writeLock().lock();
         try {
-            if (read(key) != null) return;
+            if (read(key) != null) throw new KeyAlreadyPresentException();
             wal.log(new Operation(OperationType.PUT, key, value, null));
             cache.put(key, value);
             memTable.put(key, value);
@@ -79,19 +83,19 @@ public class StorageEngine<K extends Comparable<? super K>, V> implements Storag
                 cache.put(key, memValue); // Promote to cache
                 return memValue;
             }
-            return null;
+            throw new KeyNotFoundException();
         } finally {
             lock.readLock().unlock();
         }
     }
 
     @Override
-    public Map<K, V> readRange(K startKey, K endKey) throws IOException {
+    public Map<K, V> readRange(K startKey, K endKey) {
         lock.readLock().lock();
         try {
             Map<K, V> result = new LinkedHashMap<>();
 
-            // Combine results from memory and disk
+            // Combine results from memory
             Iterator<K> memIter = memTable.keySet().iterator();
             while (memIter.hasNext()) {
                 K key = memIter.next();
@@ -129,11 +133,11 @@ public class StorageEngine<K extends Comparable<? super K>, V> implements Storag
     }
 
     @Override
-    public void delete(K key) throws IOException {
+    public void delete(K key) {
         lock.writeLock().lock();
         try {
             Operation op = new Operation(OperationType.DELETE, key, null, null);
-            if (read(key) == null) return;
+            if (read(key) == null) throw new KeyNotFoundException();
             wal.log(op);
             cache.remove(key);
             memTable.remove(key);

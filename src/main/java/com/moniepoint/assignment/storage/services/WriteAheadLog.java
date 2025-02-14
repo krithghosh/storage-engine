@@ -1,7 +1,7 @@
-package services;
+package com.moniepoint.assignment.storage.services;
 
-import entities.Operation;
-import entities.OperationType;
+import com.moniepoint.assignment.storage.entities.Operation;
+import com.moniepoint.assignment.storage.entities.OperationType;
 
 import java.io.*;
 import java.nio.ByteBuffer;

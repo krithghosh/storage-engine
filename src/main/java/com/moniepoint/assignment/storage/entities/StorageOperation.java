@@ -1,4 +1,4 @@
-package entities;
+package com.moniepoint.assignment.storage.entities;
 
 import java.io.IOException;
 import java.util.Map;
