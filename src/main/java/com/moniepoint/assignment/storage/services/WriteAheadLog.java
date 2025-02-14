@@ -14,9 +14,9 @@ class WriteAheadLog<K, V> implements AutoCloseable {
     private final FileChannel fileChannel;
     private final File logFile;
 
-    public WriteAheadLog(String path) {
+    public WriteAheadLog() {
         try {
-            logFile = new File(path + "/wal.log");
+            logFile = new File(System.getProperty("user.dir") + "/wal.log");
             fileChannel = FileChannel.open(logFile.toPath(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
             buffer = ByteBuffer.allocateDirect(8192); // 8KB buffer
         } catch (IOException e) {

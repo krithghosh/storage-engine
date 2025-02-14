@@ -19,12 +19,10 @@ public class StorageEngine<K extends Comparable<? super K>, V> implements Storag
     private final WriteAheadLog wal;
     private final LruCache<K, V> cache;
     private final ReadWriteLock lock;
-    private final String dataDir;
 
     public StorageEngine() {
-        this.dataDir = new File(getClass().getClassLoader().getResource("data").getFile()).getAbsolutePath();
         this.memTable = new ConcurrentHashMap<>();
-        this.wal = new WriteAheadLog(dataDir);
+        this.wal = new WriteAheadLog();
         this.lock = new ReentrantReadWriteLock();
         this.cache = new LruCache<>(1000);
         recoverFromLogs();
